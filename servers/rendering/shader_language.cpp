@@ -9874,7 +9874,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										return ERR_PARSE_ERROR;
 									}
 
-									if (is_sampler_type(type)) {
+									if (is_sampler_type(type) || type == TYPE_VEC3 || type == TYPE_VEC4) {
 										if (uniform.use_color) {
 											_set_error(vformat(RTR("Duplicated hint: '%s'."), "source_color"));
 											return ERR_PARSE_ERROR;
