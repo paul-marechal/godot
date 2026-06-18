@@ -798,7 +798,8 @@ void MaterialStorage::MaterialData::update_uniform_buffer(const HashMap<StringNa
 			if (E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR_CONVERSION_DISABLED) {
 				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, V->value, data, false);
 			} else {
-				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, V->value, data, p_use_linear_color);
+				// bool srgb = p_use_linear_color && !E.value.use_color;
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, V->value, data, E.value.use_color);
 			}
 
 		} else if (E.value.default_value.size()) {

@@ -334,7 +334,7 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "uniform bool sub_emitter_keep_velocity;\n";
 	}
 
-	code += "uniform vec4 color_value : source_color;\n";
+	code += "uniform vec4 color_value;\n";
 
 	code += "uniform vec3 gravity;\n";
 
