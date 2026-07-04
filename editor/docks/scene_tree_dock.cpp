@@ -850,8 +850,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				Ref<Script> existing = n->get_script();
 				Ref<Script> empty = EditorNode::get_singleton()->get_object_custom_type_base(n);
 				if (existing != empty) {
-					undo_redo->add_do_method(n, "set_script", empty);
-					undo_redo->add_undo_method(n, "set_script", existing);
+					undo_redo->add_do_method(n, "replace_script", empty);
+					undo_redo->add_undo_method(n, "replace_script", existing);
 
 					List<PropertyInfo> properties;
 					n->get_property_list(&properties);

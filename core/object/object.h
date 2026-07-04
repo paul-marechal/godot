@@ -744,6 +744,8 @@ public:
 	DEBUG_VIRTUAL void set_script(const Variant &p_script);
 	DEBUG_VIRTUAL Variant get_script() const;
 
+	DEBUG_VIRTUAL void replace_script(const Variant &p_script);
+
 	DEBUG_VIRTUAL bool has_meta(const StringName &p_name) const;
 	DEBUG_VIRTUAL void set_meta(const StringName &p_name, const Variant &p_value);
 	DEBUG_VIRTUAL void remove_meta(const StringName &p_name);

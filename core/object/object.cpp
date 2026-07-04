@@ -36,11 +36,17 @@
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
+#include "core/object/property_info.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+#include "core/string/string_name.h"
 #include "core/string/translation_server.h"
+#include "core/string/ustring.h"
+#include "core/templates/a_hash_map.h"
+#include "core/templates/pair.h"
 #include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 
 #ifdef DEBUG_ENABLED
 
@@ -994,6 +1000,71 @@ void Object::set_script(const Variant &p_script) {
 	emit_signal(CoreStringName(script_changed));
 }
 
+void Object::replace_script(const Variant &p_script) {
+	if (get_script() == p_script) {
+		return;
+	}
+
+	Ref<Script> s = p_script;
+	if (!p_script.is_null()) {
+		ERR_FAIL_COND_MSG(s.is_null(), "Cannot set object script. Parameter should be null or a reference to a valid script.");
+		ERR_FAIL_COND_MSG(s->is_abstract(), vformat("Cannot set object script. Script '%s' should not be abstract.", s->get_path()));
+	}
+
+	List<Ref<Script>> bases;
+	List<Pair<String, Variant>> values;
+
+	if (script_instance) {
+		if (s.ptr()) {
+			// gather previous' script bases
+			Ref<Script> base = script_instance->get_script();
+			while (base.ptr()) {
+				bases.push_back(base);
+				base = base->get_base_script();
+			}
+			// find common ancestor with the new script
+			Ref<Script> common = s;
+			while (common.ptr() && !bases.find(common)) {
+				common = common->get_base_script();
+			}
+			// backup common properties
+			if (common.ptr()) {
+				List<PropertyInfo> properties;
+				common->get_script_property_list(&properties);
+				for (const PropertyInfo &property : properties) {
+					if (property.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) {
+						Variant value;
+						if (script_instance->get(property.name, value)) {
+							values.push_back(Pair(property.name, value));
+						}
+					}
+				}
+			}
+		}
+		memdelete(script_instance);
+		script_instance = nullptr;
+	}
+
+	if (s.is_valid()) {
+		if (s->can_instantiate()) {
+			OBJ_DEBUG_LOCK
+			script_instance = s->instance_create(this);
+		} else if (Engine::get_singleton()->is_editor_hint()) {
+			OBJ_DEBUG_LOCK
+			script_instance = s->placeholder_instance_create(this);
+		}
+	}
+
+	if (script_instance) {
+		for (const Pair<String, Variant> &E : values) {
+			script_instance->set(E.first, E.second);
+		}
+	}
+
+	notify_property_list_changed(); //scripts may add variables, so refresh is desired
+	emit_signal(CoreStringName(script_changed));
+}
+
 void Object::set_script_instance(ScriptInstance *p_instance) {
 	if (script_instance == p_instance) {
 		return;
@@ -1849,6 +1920,8 @@ void Object::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_script", "script"), &Object::set_script);
 	ClassDB::bind_method(D_METHOD("get_script"), &Object::get_script);
+
+	ClassDB::bind_method(D_METHOD("replace_script", "script"), &Object::replace_script);
 
 	ClassDB::bind_method(D_METHOD("set_meta", "name", "value"), &Object::set_meta);
 	ClassDB::bind_method(D_METHOD("remove_meta", "name"), &Object::remove_meta);
