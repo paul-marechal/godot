@@ -36,17 +36,12 @@
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
-#include "core/object/property_info.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
-#include "core/string/string_name.h"
 #include "core/string/translation_server.h"
-#include "core/string/ustring.h"
-#include "core/templates/a_hash_map.h"
 #include "core/templates/pair.h"
 #include "core/variant/typed_array.h"
-#include "core/variant/variant.h"
 
 #ifdef DEBUG_ENABLED
 
